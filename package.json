@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node ./dist.js",
+    "start": "node ./dist/index.js",
     "dev": "nodemon"
   },
   "keywords": [],
@@ -17,17 +17,17 @@
     "@types/express": "^5.0.5",
     "@types/jsonwebtoken": "^9.0.10",
     "nodemon": "^3.1.11",
-    "prisma": "^7.0.0",
+    "prisma": "^7.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@prisma/client": "^7.0.0",
-    "bcrypt": "^6.0.0",
+    "@prisma/client": "^7.0.1",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "generate": "^0.14.0",
     "jsonwebtoken": "^9.0.2"
-  }
+    }
 }
