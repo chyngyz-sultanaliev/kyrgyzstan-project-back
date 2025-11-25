@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+// USERS 
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  username  String?
+  password  String?
+  avatar    String?
+  isAdmin   Boolean    @default(false) 
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  favorites Favorite[]
+  reviews   Review[]
+}
+// TOUR CATEGORIES & TOURS & TOURDAY
+model CategoryTour {
+  id        String  @id @default(uuid())
+  name      String
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tours     Tour[]
+}
+
+model Tour {
+  id          String       @id @default(uuid())
+  title       String
+  description String?
+  image       String?
+  location    String 
+  seaLevel    String
+  walk        Int
+  byCar       Int
+  days        Int
+  price       Int
+  categoryId  String
+  category    CategoryTour @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  tourDays    TourDay[]    
+  reviews     Review[]
+
+  @@index([categoryId])
+}
+
+model TourDay {
+  id          String   @id @default(uuid())
+  dayNumber   Int
+  description String
+  tourId      String
+  tour        Tour     @relation(fields: [tourId], references: [id])
+
+  @@index([tourId])
+  @@unique([tourId, dayNumber])  
+}
+// CAR CATEGORIES & CARS
+model CategoryCar {
+  id          String @id @default(uuid())
+  name        String
+  images      String?                     
+  seats       Int
+  withDriver  Boolean? @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  cars        Car[]
+}
+
+model Car {
+  id             String      @id @default(uuid())
+  title          String                      
+  description    String?                     
+  image          Json?                     
+  transmission   String?                      
+  seat           Int                           
+  year           Int?                          
+  engine         String?                       
+  drive          String?                       
+  fuelType       String?                       
+  pricePerDay    Int                           
+  minDriverAge   Int?                           
+  categoryId     String
+  withDriver     Boolean? @default(false)
+  category       CategoryCar @relation(fields: [categoryId], references: [id])
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  reviews        Review[]
+  
+  @@index([categoryId])
+}
+// HOTEL CATEGORIES & HOTELS
+model CategoryHotel {
+  id        String @id @default(uuid())
+  name      String
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  hotels    Hotel[]
+}
+
+model Hotel {
+  id           String   @id @default(uuid())
+  title        String
+  description  String?
+  images       Json?
+
+  sleepingPlaces Int
+  maxGuests      Int
+  area           Int?
+  floor          Int?
+  landArea       Int?
+  housingType    String?
+  address        String?
+
+  pool        Boolean? @default(false)
+  sauna       Boolean? @default(false)
+  billiard    Boolean? @default(false)
+  tennis      Boolean? @default(false)
+  playstation Boolean? @default(false)
+  music       Boolean? @default(false)
+  wifi        Boolean? @default(false)
+
+  priceWeekday   Int
+  priceFriday    Int
+  priceSaturday  Int
+  priceSunday    Int
+  fullWeekend    Int?
+  newYearPrice   Int?
+  januaryPrice   Int?
+  deposit        Int?
+
+  checkIn        String?
+  checkOut       String?
+  importantInfo  String?
+  extraFee       String?
+  reviews        Review[]
+
+  categoryId     String
+  category       CategoryHotel @relation(fields: [categoryId], references: [id])
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([categoryId])
+}
+// FAVORITE
+enum FavoriteItemType {
+  TOUR
+  CAR
+  HOTEL
+}
+
+model Favorite {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  itemId    String
+  itemType  FavoriteItemType
+  createdAt DateTime         @default(now())
+
+  @@index([userId])
+  @@index([itemType, itemId])
+}
+// REVIEW
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  tourId    String?  
+  tour      Tour?    @relation(fields: [tourId], references: [id])
+
+  carId     String?
+  car       Car?     @relation(fields: [carId], references: [id])
+
+  hotelId   String?
+  hotel     Hotel?   @relation(fields: [hotelId], references: [id])
+
+  rating    Float
+  comment   String?
+  Images Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+// NEWS
+model News {
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  image       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
