@@ -11,6 +11,8 @@ Backend проекта Kyrgyzstan, использующий Node.js, Express и 
 - Git + GitHub
 
 ## 📁 Структура проекта
+
+
 kyrgyzstan-project-back/
 ├─ prisma/
 │ ├─ migrations/
