@@ -2,7 +2,7 @@ import { Router } from "express";
 import cors from "cors";
 import authRoutes from "../modules/auth/auth.routes";
 import carRoutes from "../modules/car/car.routes";
-import categoryRoutes from "../modules/categoties/categoties.routes";
+import categoryRoutes from "../modules/categories/categories.routes";
 
 const globalRoutes = Router();
 

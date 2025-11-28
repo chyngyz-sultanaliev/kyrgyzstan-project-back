@@ -10,7 +10,7 @@ export const validate =
       const err = result.error as ZodError;
       return res.status(400).json({
         success: false,
-        message: "Валидация катасы",
+        message: "Error validation",
         errors: (result.error as any).errors,
       });
     }
