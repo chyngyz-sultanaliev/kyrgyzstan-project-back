@@ -1,7 +1,6 @@
 import { authMiddleware } from "./../../middleware/auth.middleware";
 import { Router } from "express";
 import carControllers from "./car.controllers";
-import { adminMiddleware } from "../../middleware/admin.middleware";
 
 const carRoutes = Router();
 carRoutes.get("/get", carControllers.getCar);
