@@ -3,7 +3,26 @@ import prisma from "../../config/prisma";
 
 export const getHotel = async (req: Request, res: Response) => {
   try {
-    const hotel = await prisma.hotel.findMany();
+    const hotel = await prisma.hotel.findMany({
+      include: {
+        reviews: {
+          where: {
+            hotelId: { not: null },
+          },
+          select: {
+            id: true,
+            rating: true,
+            comment: true,
+            Images: true,
+            createdAt: true,
+            user: {
+              select: { username: true, avatar: true },
+            },
+          },
+        },
+      },
+    });
+
     return res.status(200).json({
       success: true,
       hotel,

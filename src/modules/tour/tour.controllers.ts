@@ -3,9 +3,26 @@ import prisma from "../../config/prisma";
 
 const getTour = async (req: Request, res: Response) => {
   try {
-    const tour = await prisma.tour.findMany({  include: {
-        tourDays: true, 
-      },});
+    const tour = await prisma.tour.findMany({
+      include: {
+        reviews: {
+          where: {
+            tourId: { not: null },
+          },
+          select: {
+            id: true,
+            rating: true,
+            comment: true,
+            Images: true,
+            createdAt: true,
+            user: {
+              select: { username: true, avatar: true },
+            },
+          },
+        },
+        tourDays: true,
+      },
+    });
     res.status(200).json({
       success: true,
       tour,
