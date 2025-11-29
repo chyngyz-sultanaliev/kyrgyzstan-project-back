@@ -146,46 +146,5 @@ const putCar = async (req: Request, res: Response) => {
   }
 };
 
-// PATCH car (update partial fields)
-const patchCar = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    if (!id)
-      return res
-        .status(400)
-        .json({ success: false, message: "Car id обязателен" });
 
-    const { title, year, pricePerDay, categoryId } = req.body;
-
-    // Дубликат текшерүү (өзүн өзүн текшербейт)
-    if (title || year || pricePerDay || categoryId) {
-      const existingCar = await prisma.car.findFirst({
-        where: {
-          title,
-          year,
-          pricePerDay,
-          categoryId,
-          NOT: { id },
-        },
-      });
-      if (existingCar)
-        return res
-          .status(409)
-          .json({ success: false, message: "Такой автомобиль уже существует" });
-    }
-
-    const updatedCar = await prisma.car.update({
-      where: { id },
-      data: { ...req.body },
-    });
-
-    return res.status(200).json({ success: true, car: updatedCar });
-  } catch (error: any) {
-    return res.status(500).json({
-      success: false,
-      message: `Ошибка при обновлении данных: ${error.message}`,
-    });
-  }
-};
-
-export default { getCar, postCar, deleteCar, putCar, patchCar };
+export default { getCar, postCar, deleteCar, putCar };

@@ -1,13 +1,11 @@
-import { authMiddleware } from "./../../middleware/auth.middleware";
+import { adminMiddleware } from "./../../middleware/admin.middleware";
 import { Router } from "express";
 import carControllers from "./car.controllers";
-import { adminMiddleware } from "../../middleware/admin.middleware";
 
 const carRoutes = Router();
 carRoutes.get("/get", carControllers.getCar);
-carRoutes.post("/post", carControllers.postCar);
-carRoutes.delete("/delete", carControllers.deleteCar);
-carRoutes.put("/put/:id", carControllers.putCar);
-carRoutes.patch("/patch", authMiddleware, carControllers.patchCar);
+carRoutes.post("/post", adminMiddleware, carControllers.postCar);
+carRoutes.delete("/delete", adminMiddleware, carControllers.deleteCar);
+carRoutes.put("/put/:id", adminMiddleware, carControllers.putCar);
 
 export default carRoutes;

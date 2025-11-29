@@ -3,7 +3,9 @@ import prisma from "../../config/prisma";
 
 const getTour = async (req: Request, res: Response) => {
   try {
-    const tour = await prisma.tour.findMany();
+    const tour = await prisma.tour.findMany({  include: {
+        tourDays: true, 
+      },});
     res.status(200).json({
       success: true,
       tour,
