@@ -4,7 +4,26 @@ import prisma from "../../config/prisma";
 // GET all cars
 const getCar = async (req: Request, res: Response) => {
   try {
-    const cars = await prisma.car.findMany();
+    const cars = await prisma.car.findMany({
+      include: {
+        reviews: {
+          where: {
+            carId: { not: null },
+          },
+          select: {
+            id: true,
+            rating: true,
+            comment: true,
+            Images: true,
+            createdAt: true,
+            user: {
+              select: { username: true, avatar: true },
+            },
+          },
+        },
+      },
+    });
+
     res.status(200).json({ success: true, cars });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error in getCar" });
@@ -145,6 +164,5 @@ const putCar = async (req: Request, res: Response) => {
     });
   }
 };
-
 
 export default { getCar, postCar, deleteCar, putCar };

@@ -1,12 +1,13 @@
+import { authMiddleware } from './../../middleware/auth.middleware';
 import { Router } from "express";
 import controllers from "./hotel.controllers";
 import { adminMiddleware } from "../../middleware/admin.middleware";
 
-const router = Router();
+const hotelRoutes = Router();
 
-router.get("/get", controllers.getHotel);
-router.post("/post", adminMiddleware, controllers.postHotel);
-router.patch("/patch/:id", adminMiddleware, controllers.updateHotel);
-router.delete("/delete/:id", adminMiddleware, controllers.deleteHotel);
+hotelRoutes.get("/get", controllers.getHotel);
+hotelRoutes.post("/post", authMiddleware, adminMiddleware, controllers.postHotel);
+hotelRoutes.patch("/patch/:id", authMiddleware, adminMiddleware, controllers.updateHotel);
+hotelRoutes.delete("/delete/:id", authMiddleware, adminMiddleware, controllers.deleteHotel);
 
-export default router;
+export default hotelRoutes;
