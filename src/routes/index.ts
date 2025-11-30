@@ -3,11 +3,13 @@ import cors from "cors";
 import carRoutes from "../modules/car/car.routes";
 import authRoutes from "../modules/auth/auth.routes";
 import tourRoutes from "../modules/tour/tour.routes";
+import newsRoutes from "../modules/news/news.routes";
 import hotelRoutes from "../modules/hotel/hotel.routes";
 import categoriesRoutes from "../modules/categoties/categoties.routes";
 import reviewRoutes from "../modules/review/review.routes";
 import favoriteRoutes from "../modules/favorite/favorite.routes";
 import { authMiddleware } from "../middleware/auth.middleware";
+import { adminMiddleware } from "../middleware/admin.middleware";
 
 const globalRoutes = Router();
 
@@ -18,6 +20,7 @@ globalRoutes.use(cors(corsConfig));
 globalRoutes.use("/car", carRoutes);
 globalRoutes.use("/auth", authRoutes);
 globalRoutes.use("/tour", tourRoutes);
+globalRoutes.use("/news", authMiddleware, adminMiddleware, newsRoutes);
 globalRoutes.use("/hotel", hotelRoutes);
 globalRoutes.use("/categories", categoriesRoutes);
 globalRoutes.use("/review", authMiddleware, reviewRoutes);
