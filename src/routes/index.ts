@@ -20,7 +20,7 @@ globalRoutes.use(cors(corsConfig));
 globalRoutes.use("/car", carRoutes);
 globalRoutes.use("/auth", authRoutes);
 globalRoutes.use("/tour", tourRoutes);
-globalRoutes.use("/news", authMiddleware, adminMiddleware, newsRoutes);
+globalRoutes.use("/news", newsRoutes);
 globalRoutes.use("/hotel", hotelRoutes);
 globalRoutes.use("/categories", categoriesRoutes);
 globalRoutes.use("/review", authMiddleware, reviewRoutes);

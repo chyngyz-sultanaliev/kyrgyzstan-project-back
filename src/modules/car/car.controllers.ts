@@ -1,10 +1,29 @@
 import { Request, Response } from "express";
 import prisma from "../../config/prisma";
 
-// GET all cars
 const getCar = async (req: Request, res: Response) => {
   try {
-    const cars = await prisma.car.findMany({
+    const cars = await prisma.car.findMany();
+
+    res.status(200).json({ success: true, cars });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error in getCar" });
+  }
+};
+
+const getOneCar = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "ID машины не был передан.",
+      });
+    }
+
+    const cars = await prisma.hotel.findUnique({
+      where: { id },
       include: {
         reviews: {
           where: {
@@ -24,13 +43,26 @@ const getCar = async (req: Request, res: Response) => {
       },
     });
 
-    res.status(200).json({ success: true, cars });
+    if (!cars) {
+      return res.status(404).json({
+        success: false,
+        message: "Машина с таким ID не найден.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      cars,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error in getCar" });
+    console.error("Ошибка getHotelById:", error);
+    return res.status(500).json({
+      success: false,
+      error: `Ошибка при получении машины: ${error}`,
+    });
   }
 };
 
-// POST new car
 const postCar = async (req: Request, res: Response) => {
   try {
     const {
@@ -94,7 +126,6 @@ const postCar = async (req: Request, res: Response) => {
   }
 };
 
-// DELETE car
 const deleteCar = async (req: Request, res: Response) => {
   try {
     const { id } = req.body;
@@ -123,10 +154,9 @@ const deleteCar = async (req: Request, res: Response) => {
   }
 };
 
-// PUT car (update all fields)
 const putCar = async (req: Request, res: Response) => {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
     if (!id)
       return res
         .status(400)
@@ -165,4 +195,4 @@ const putCar = async (req: Request, res: Response) => {
   }
 };
 
-export default { getCar, postCar, deleteCar, putCar };
+export default { getCar, postCar, deleteCar, putCar, getOneCar };

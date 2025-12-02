@@ -6,6 +6,7 @@ import { authMiddleware } from "../../middleware/auth.middleware";
 const carRoutes = Router();
 
 carRoutes.get("/get", carControllers.getCar);
+carRoutes.get("/get/:id", carControllers.getOneCar);
 carRoutes.post("/post", authMiddleware, adminMiddleware, carControllers.postCar);
 carRoutes.delete("/delete", authMiddleware, adminMiddleware, carControllers.deleteCar);
 carRoutes.put("/put/:id", authMiddleware, adminMiddleware, carControllers.putCar);

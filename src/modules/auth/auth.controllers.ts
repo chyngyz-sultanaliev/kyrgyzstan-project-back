@@ -124,6 +124,7 @@ const profile = async (req: Request, res: Response) => {
         avatar: true,
         createdAt: true,
         isAdmin: true,
+        favorites: true,
       },
     });
 

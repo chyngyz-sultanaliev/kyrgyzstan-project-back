@@ -6,6 +6,7 @@ import { authMiddleware } from "../../middleware/auth.middleware";
 const tourRoutes = Router();
 // Tour
 tourRoutes.get("/get", tourControllers.getTour);
+tourRoutes.get("/get/:id", tourControllers.getOneTour);
 tourRoutes.post("/post", authMiddleware, adminMiddleware, tourControllers.postTour);
 tourRoutes.put("/put/:id", authMiddleware, adminMiddleware, tourControllers.putTour);
 tourRoutes.delete("/delete/:id", authMiddleware, adminMiddleware, tourControllers.deleteTour);

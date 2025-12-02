@@ -1,31 +1,12 @@
 import { Request, Response } from "express";
 import prisma from "../../config/prisma";
 
-export const getHotel = async (req: Request, res: Response) => {
+ const getHotel = async (req: Request, res: Response) => {
   try {
-    const hotel = await prisma.hotel.findMany({
-      include: {
-        reviews: {
-          where: {
-            hotelId: { not: null },
-          },
-          select: {
-            id: true,
-            rating: true,
-            comment: true,
-            Images: true,
-            createdAt: true,
-            user: {
-              select: { username: true, avatar: true },
-            },
-          },
-        },
-      },
-    });
-
+    const hotels = await prisma.hotel.findMany();
     return res.status(200).json({
       success: true,
-      hotel,
+      hotels,
     });
   } catch (error) {
     console.error("Ошибка при получении всех записей:", error);
@@ -36,7 +17,62 @@ export const getHotel = async (req: Request, res: Response) => {
   }
 };
 
-export const postHotel = async (req: Request, res: Response) => {
+ const getOneHotel = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "ID отеля не был передан.",
+      });
+    }
+
+    const hotels = await prisma.hotel.findUnique({
+      where: { id },
+      include: {
+        reviews: {
+          where: {
+            hotelId: id,
+          },
+          select: {
+            id: true,
+            rating: true,
+            comment: true,
+            Images: true,
+            createdAt: true,
+            user: {
+              select: {
+                username: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!hotels) {
+      return res.status(404).json({
+        success: false,
+        message: "Отель с таким ID не найден.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      hotels,
+    });
+  } catch (error) {
+    console.error("Ошибка getHotelById:", error);
+    return res.status(500).json({
+      success: false,
+      error: `Ошибка при получении отеля: ${error}`,
+    });
+  }
+};
+
+ const postHotel = async (req: Request, res: Response) => {
   try {
     const {
       title,
@@ -153,7 +189,7 @@ export const postHotel = async (req: Request, res: Response) => {
   }
 };
 
-export const updateHotel = async (req: Request, res: Response) => {
+ const updateHotel = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     if (!id) {
@@ -227,7 +263,7 @@ export const updateHotel = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteHotel = async (req: Request, res: Response) => {
+ const deleteHotel = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -259,4 +295,4 @@ export const deleteHotel = async (req: Request, res: Response) => {
   }
 };
 
-export default { getHotel, postHotel, updateHotel, deleteHotel };
+export default { getHotel, postHotel, updateHotel, deleteHotel, getOneHotel };
