@@ -6,11 +6,34 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const prisma_1 = __importDefault(require("../../config/prisma"));
 const getTour = async (req, res) => {
     try {
-        const tour = await prisma_1.default.tour.findMany({
+        const tours = await prisma_1.default.tour.findMany();
+        res.status(200).json({
+            success: true,
+            tours,
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            error: `Error in getTour: ${error}`,
+        });
+    }
+};
+const getOneTour = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                message: "ID тура не был передан.",
+            });
+        }
+        const tours = await prisma_1.default.tour.findUnique({
+            where: { id },
             include: {
                 reviews: {
                     where: {
-                        tourId: { not: null },
+                        tourId: id,
                     },
                     select: {
                         id: true,
@@ -26,15 +49,22 @@ const getTour = async (req, res) => {
                 tourDays: true,
             },
         });
-        res.status(200).json({
+        if (!tours) {
+            return res.status(404).json({
+                success: false,
+                message: "Тур с таким ID не найден.",
+            });
+        }
+        return res.status(200).json({
             success: true,
-            tour,
+            tours,
         });
     }
     catch (error) {
-        res.status(500).json({
+        console.error("Ошибка getHotelById:", error);
+        return res.status(500).json({
             success: false,
-            error: `Error in getTour: ${error}`,
+            error: `Ошибка при получении тура: ${error}`,
         });
     }
 };
@@ -273,6 +303,7 @@ const deleteTourday = async (req, res) => {
 };
 exports.default = {
     getTour,
+    getOneTour,
     postTour,
     putTour,
     deleteTour,

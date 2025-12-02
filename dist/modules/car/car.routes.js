@@ -9,6 +9,7 @@ const car_controllers_1 = __importDefault(require("./car.controllers"));
 const auth_middleware_1 = require("../../middleware/auth.middleware");
 const carRoutes = (0, express_1.Router)();
 carRoutes.get("/get", car_controllers_1.default.getCar);
+carRoutes.get("/get/:id", car_controllers_1.default.getOneCar);
 carRoutes.post("/post", auth_middleware_1.authMiddleware, admin_middleware_1.adminMiddleware, car_controllers_1.default.postCar);
 carRoutes.delete("/delete", auth_middleware_1.authMiddleware, admin_middleware_1.adminMiddleware, car_controllers_1.default.deleteCar);
 carRoutes.put("/put/:id", auth_middleware_1.authMiddleware, admin_middleware_1.adminMiddleware, car_controllers_1.default.putCar);

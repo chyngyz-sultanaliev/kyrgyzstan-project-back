@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 declare const _default: {
     getTour: (req: Request, res: Response) => Promise<void>;
+    getOneTour: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
     postTour: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
     putTour: (req: Request<{
         id: string;

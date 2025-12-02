@@ -3,32 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteHotel = exports.updateHotel = exports.postHotel = exports.getHotel = void 0;
 const prisma_1 = __importDefault(require("../../config/prisma"));
 const getHotel = async (req, res) => {
     try {
-        const hotel = await prisma_1.default.hotel.findMany({
-            include: {
-                reviews: {
-                    where: {
-                        hotelId: { not: null },
-                    },
-                    select: {
-                        id: true,
-                        rating: true,
-                        comment: true,
-                        Images: true,
-                        createdAt: true,
-                        user: {
-                            select: { username: true, avatar: true },
-                        },
-                    },
-                },
-            },
-        });
+        const hotels = await prisma_1.default.hotel.findMany();
         return res.status(200).json({
             success: true,
-            hotel,
+            hotels,
         });
     }
     catch (error) {
@@ -39,7 +20,57 @@ const getHotel = async (req, res) => {
         });
     }
 };
-exports.getHotel = getHotel;
+const getOneHotel = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                message: "ID отеля не был передан.",
+            });
+        }
+        const hotels = await prisma_1.default.hotel.findUnique({
+            where: { id },
+            include: {
+                reviews: {
+                    where: {
+                        hotelId: id,
+                    },
+                    select: {
+                        id: true,
+                        rating: true,
+                        comment: true,
+                        Images: true,
+                        createdAt: true,
+                        user: {
+                            select: {
+                                username: true,
+                                avatar: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        if (!hotels) {
+            return res.status(404).json({
+                success: false,
+                message: "Отель с таким ID не найден.",
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            hotels,
+        });
+    }
+    catch (error) {
+        console.error("Ошибка getHotelById:", error);
+        return res.status(500).json({
+            success: false,
+            error: `Ошибка при получении отеля: ${error}`,
+        });
+    }
+};
 const postHotel = async (req, res) => {
     try {
         const { title, description, images, sleepingPlaces, maxGuests, area, floor, landArea, housingType, address, pool, sauna, billiard, tennis, playstation, music, wifi, priceWeekday, priceFriday, priceSaturday, priceSunday, fullWeekend, newYearPrice, januaryPrice, deposit, checkIn, checkOut, importantInfo, extraFee, reviews, categoryId, } = req.body;
@@ -110,7 +141,6 @@ const postHotel = async (req, res) => {
         });
     }
 };
-exports.postHotel = postHotel;
 const updateHotel = async (req, res) => {
     try {
         const { id } = req.params;
@@ -176,7 +206,6 @@ const updateHotel = async (req, res) => {
         });
     }
 };
-exports.updateHotel = updateHotel;
 const deleteHotel = async (req, res) => {
     try {
         const { id } = req.params;
@@ -204,6 +233,5 @@ const deleteHotel = async (req, res) => {
         });
     }
 };
-exports.deleteHotel = deleteHotel;
-exports.default = { getHotel: exports.getHotel, postHotel: exports.postHotel, updateHotel: exports.updateHotel, deleteHotel: exports.deleteHotel };
+exports.default = { getHotel, postHotel, updateHotel, deleteHotel, getOneHotel };
 //# sourceMappingURL=hotel.controllers.js.map

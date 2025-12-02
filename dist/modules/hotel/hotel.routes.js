@@ -9,6 +9,7 @@ const hotel_controllers_1 = __importDefault(require("./hotel.controllers"));
 const admin_middleware_1 = require("../../middleware/admin.middleware");
 const hotelRoutes = (0, express_1.Router)();
 hotelRoutes.get("/get", hotel_controllers_1.default.getHotel);
+hotelRoutes.get("/get/:id", hotel_controllers_1.default.getOneHotel);
 hotelRoutes.post("/post", auth_middleware_1.authMiddleware, admin_middleware_1.adminMiddleware, hotel_controllers_1.default.postHotel);
 hotelRoutes.patch("/patch/:id", auth_middleware_1.authMiddleware, admin_middleware_1.adminMiddleware, hotel_controllers_1.default.updateHotel);
 hotelRoutes.delete("/delete/:id", auth_middleware_1.authMiddleware, admin_middleware_1.adminMiddleware, hotel_controllers_1.default.deleteHotel);

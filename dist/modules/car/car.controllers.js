@@ -4,10 +4,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const prisma_1 = __importDefault(require("../../config/prisma"));
-// GET all cars
 const getCar = async (req, res) => {
     try {
-        const cars = await prisma_1.default.car.findMany({
+        const cars = await prisma_1.default.car.findMany();
+        res.status(200).json({ success: true, cars });
+    }
+    catch (error) {
+        res.status(500).json({ success: false, message: "Error in getCar" });
+    }
+};
+const getOneCar = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                message: "ID машины не был передан.",
+            });
+        }
+        const cars = await prisma_1.default.hotel.findUnique({
+            where: { id },
             include: {
                 reviews: {
                     where: {
@@ -26,13 +42,25 @@ const getCar = async (req, res) => {
                 },
             },
         });
-        res.status(200).json({ success: true, cars });
+        if (!cars) {
+            return res.status(404).json({
+                success: false,
+                message: "Машина с таким ID не найден.",
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            cars,
+        });
     }
     catch (error) {
-        res.status(500).json({ success: false, message: "Error in getCar" });
+        console.error("Ошибка getHotelById:", error);
+        return res.status(500).json({
+            success: false,
+            error: `Ошибка при получении машины: ${error}`,
+        });
     }
 };
-// POST new car
 const postCar = async (req, res) => {
     try {
         const { title, description, image, transmission, seat, year, engine, drive, fuelType, pricePerDay, minDriverAge, categoryId, withDriver, } = req.body;
@@ -77,7 +105,6 @@ const postCar = async (req, res) => {
         });
     }
 };
-// DELETE car
 const deleteCar = async (req, res) => {
     try {
         const { id } = req.body;
@@ -104,10 +131,9 @@ const deleteCar = async (req, res) => {
         });
     }
 };
-// PUT car (update all fields)
 const putCar = async (req, res) => {
     try {
-        const { id } = req.body;
+        const { id } = req.params;
         if (!id)
             return res
                 .status(400)
@@ -141,5 +167,5 @@ const putCar = async (req, res) => {
         });
     }
 };
-exports.default = { getCar, postCar, deleteCar, putCar };
+exports.default = { getCar, postCar, deleteCar, putCar, getOneCar };
 //# sourceMappingURL=car.controllers.js.map
