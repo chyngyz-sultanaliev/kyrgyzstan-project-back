@@ -4,6 +4,7 @@ declare const _default: {
     postCar: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
     deleteCar: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
     putCar: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
+    getOneCar: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
 };
 export default _default;
 //# sourceMappingURL=car.controllers.d.ts.map

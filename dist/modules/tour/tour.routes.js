@@ -10,6 +10,7 @@ const auth_middleware_1 = require("../../middleware/auth.middleware");
 const tourRoutes = (0, express_1.Router)();
 // Tour
 tourRoutes.get("/get", tour_controllers_1.default.getTour);
+tourRoutes.get("/get/:id", tour_controllers_1.default.getOneTour);
 tourRoutes.post("/post", auth_middleware_1.authMiddleware, admin_middleware_1.adminMiddleware, tour_controllers_1.default.postTour);
 tourRoutes.put("/put/:id", auth_middleware_1.authMiddleware, admin_middleware_1.adminMiddleware, tour_controllers_1.default.putTour);
 tourRoutes.delete("/delete/:id", auth_middleware_1.authMiddleware, admin_middleware_1.adminMiddleware, tour_controllers_1.default.deleteTour);

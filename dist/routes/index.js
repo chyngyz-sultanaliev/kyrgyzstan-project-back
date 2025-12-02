@@ -14,7 +14,6 @@ const categoties_routes_1 = __importDefault(require("../modules/categoties/categ
 const review_routes_1 = __importDefault(require("../modules/review/review.routes"));
 const favorite_routes_1 = __importDefault(require("../modules/favorite/favorite.routes"));
 const auth_middleware_1 = require("../middleware/auth.middleware");
-const admin_middleware_1 = require("../middleware/admin.middleware");
 const globalRoutes = (0, express_1.Router)();
 const corsConfig = {
     origin: ["http://localhost:3000"],
@@ -23,7 +22,7 @@ globalRoutes.use((0, cors_1.default)(corsConfig));
 globalRoutes.use("/car", car_routes_1.default);
 globalRoutes.use("/auth", auth_routes_1.default);
 globalRoutes.use("/tour", tour_routes_1.default);
-globalRoutes.use("/news", auth_middleware_1.authMiddleware, admin_middleware_1.adminMiddleware, news_routes_1.default);
+globalRoutes.use("/news", news_routes_1.default);
 globalRoutes.use("/hotel", hotel_routes_1.default);
 globalRoutes.use("/categories", categoties_routes_1.default);
 globalRoutes.use("/review", auth_middleware_1.authMiddleware, review_routes_1.default);

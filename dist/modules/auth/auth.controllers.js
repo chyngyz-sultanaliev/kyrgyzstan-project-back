@@ -106,6 +106,7 @@ const profile = async (req, res) => {
                 avatar: true,
                 createdAt: true,
                 isAdmin: true,
+                favorites: true,
             },
         });
         if (!user) {
