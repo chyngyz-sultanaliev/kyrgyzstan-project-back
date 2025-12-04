@@ -3,9 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateResetToken = exports.verifyToken = exports.generateToken = void 0;
+exports.verifyToken = exports.generateToken = void 0;
 // src/config/token.ts
-const crypto_1 = __importDefault(require("crypto"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 /**
  * Генерация JWT
@@ -45,16 +44,8 @@ const verifyToken = (token) => {
     }
 };
 exports.verifyToken = verifyToken;
-/**
- * Генерация безопасного кода для сброса пароля (6 символов HEX)
- */
-const generateResetToken = () => {
-    return crypto_1.default.randomBytes(3).toString("hex"); // 6 символов
-};
-exports.generateResetToken = generateResetToken;
 exports.default = {
     generateToken: exports.generateToken,
     verifyToken: exports.verifyToken,
-    generateResetToken: exports.generateResetToken,
 };
 //# sourceMappingURL=token.js.map

@@ -1,5 +1,4 @@
 // src/config/token.ts
-import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
 export interface JwtPayload {
@@ -47,16 +46,8 @@ export const verifyToken = (token: string): JwtPayload | null => {
   }
 };
 
-/**
- * Генерация безопасного кода для сброса пароля (6 символов HEX)
- */
-
-export const generateResetToken = (): string => {
-  return crypto.randomBytes(3).toString("hex"); // 6 символов
-};
 
 export default {
   generateToken,
   verifyToken,
-  generateResetToken,
 };

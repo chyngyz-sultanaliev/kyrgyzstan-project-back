@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
+import { v4 as uuidv4 } from "uuid";
 import prisma from "../../config/prisma";
-import generatedToken, { generateResetToken } from "../../config/token";
+import generatedToken from "../../config/token";
 import { sendEmail } from "../../config/email.service";
 
 const register = async (req: Request, res: Response) => {
@@ -206,35 +207,44 @@ const update = async (req: Request, res: Response) => {
 };
 
 const requestResetPassword = async (req: Request, res: Response) => {
-  try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ message: "Email обязателен" });
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ message: "Email обязателен" });
 
+  try {
+    // Находим пользователя по email
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user)
       return res.status(404).json({ message: "Пользователь не найден" });
 
-    // Используем безопасный токен
-    const token = generateResetToken();
+    // Генерируем 6-значный код
+    const token = uuidv4().slice(0, 6);
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 минут
 
+    // Сохраняем токен в базе данных
     await prisma.resetPasswordToken.create({
-      data: { userId: user.id, token, expiresAt },
+      data: {
+        userId: user.id,
+        token,
+        expiresAt,
+      },
     });
+
+    // Формируем письмо
     const html = `
-    <div style="font-family: Arial, sans-serif; padding: 20px; background: #f4f4f7;">
-      <div style="max-width: 500px; margin: 0 auto; background: #fff; border-radius: 10px; padding: 30px;">
-        <h2 style="text-align:center; color:#333;">Сброс пароля</h2>
-        <p style="color:#555; font-size:15px;">Вы запросили сброс пароля. Используйте код ниже:</p>
-        <div style="text-align:center; margin:20px 0;">
-          <span style="font-size:28px; font-weight:bold; letter-spacing:6px; background:#f0f0f0; padding:15px 25px; border-radius:8px;">${token}</span>
+      <div style="font-family: Arial, sans-serif; padding: 20px; background: #f4f4f7;">
+        <div style="max-width: 500px; margin: 0 auto; background: #fff; border-radius: 10px; padding: 30px;">
+          <h2 style="text-align:center; color:#333;">Сброс пароля</h2>
+          <p style="color:#555; font-size:15px;">Вы запросили сброс пароля. Используйте код ниже:</p>
+          <div style="text-align:center; margin:20px 0;">
+            <span style="font-size:28px; font-weight:bold; letter-spacing:6px; background:#f0f0f0; padding:15px 25px; border-radius:8px;">${token}</span>
+          </div>
+          <p style="color:#555; font-size:14px;">Код действителен <strong>15 минут</strong>.<br>Если вы не запрашивали сброс пароля — проигнорируйте письмо.</p>
+          <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+          <p style="color:#888; font-size:12px; text-align:center;">Это письмо отправлено автоматически. Не отвечайте на него.</p>
         </div>
-        <p style="color:#555; font-size:14px;">Код действителен <strong>15 минут</strong>.<br>Если вы не запрашивали сброс пароля — проигнорируйте письмо.</p>
-        <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-        <p style="color:#888; font-size:12px; text-align:center;">Это письмо отправлено автоматически. Не отвечайте на него.</p>
       </div>
-    </div>
-  `;
+    `;
+
     await sendEmail({
       to: email,
       subject: "Код для сброса пароля",
@@ -245,7 +255,7 @@ const requestResetPassword = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Код отправлен на email" });
   } catch (error) {
     console.error("Ошибка requestResetPassword:", error);
-    res.status(500).json({ message: "Ошибка на сервере, попробуйте позже" });
+    res.status(500).json({ message: "Ошибка сервера, попробуйте позже" });
   }
 };
 

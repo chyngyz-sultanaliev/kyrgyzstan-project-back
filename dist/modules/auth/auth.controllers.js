@@ -1,44 +1,12 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const uuid_1 = require("uuid");
 const prisma_1 = __importDefault(require("../../config/prisma"));
-const token_1 = __importStar(require("../../config/token"));
+const token_1 = __importDefault(require("../../config/token"));
 const email_service_1 = require("../../config/email.service");
 const register = async (req, res) => {
     try {
@@ -219,33 +187,40 @@ const update = async (req, res) => {
     }
 };
 const requestResetPassword = async (req, res) => {
+    const { email } = req.body;
+    if (!email)
+        return res.status(400).json({ message: "Email обязателен" });
     try {
-        const { email } = req.body;
-        if (!email)
-            return res.status(400).json({ message: "Email обязателен" });
+        // Находим пользователя по email
         const user = await prisma_1.default.user.findUnique({ where: { email } });
         if (!user)
             return res.status(404).json({ message: "Пользователь не найден" });
-        // Используем безопасный токен
-        const token = (0, token_1.generateResetToken)();
+        // Генерируем 6-значный код
+        const token = (0, uuid_1.v4)().slice(0, 6);
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 минут
+        // Сохраняем токен в базе данных
         await prisma_1.default.resetPasswordToken.create({
-            data: { userId: user.id, token, expiresAt },
+            data: {
+                userId: user.id,
+                token,
+                expiresAt,
+            },
         });
+        // Формируем письмо
         const html = `
-    <div style="font-family: Arial, sans-serif; padding: 20px; background: #f4f4f7;">
-      <div style="max-width: 500px; margin: 0 auto; background: #fff; border-radius: 10px; padding: 30px;">
-        <h2 style="text-align:center; color:#333;">Сброс пароля</h2>
-        <p style="color:#555; font-size:15px;">Вы запросили сброс пароля. Используйте код ниже:</p>
-        <div style="text-align:center; margin:20px 0;">
-          <span style="font-size:28px; font-weight:bold; letter-spacing:6px; background:#f0f0f0; padding:15px 25px; border-radius:8px;">${token}</span>
+      <div style="font-family: Arial, sans-serif; padding: 20px; background: #f4f4f7;">
+        <div style="max-width: 500px; margin: 0 auto; background: #fff; border-radius: 10px; padding: 30px;">
+          <h2 style="text-align:center; color:#333;">Сброс пароля</h2>
+          <p style="color:#555; font-size:15px;">Вы запросили сброс пароля. Используйте код ниже:</p>
+          <div style="text-align:center; margin:20px 0;">
+            <span style="font-size:28px; font-weight:bold; letter-spacing:6px; background:#f0f0f0; padding:15px 25px; border-radius:8px;">${token}</span>
+          </div>
+          <p style="color:#555; font-size:14px;">Код действителен <strong>15 минут</strong>.<br>Если вы не запрашивали сброс пароля — проигнорируйте письмо.</p>
+          <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+          <p style="color:#888; font-size:12px; text-align:center;">Это письмо отправлено автоматически. Не отвечайте на него.</p>
         </div>
-        <p style="color:#555; font-size:14px;">Код действителен <strong>15 минут</strong>.<br>Если вы не запрашивали сброс пароля — проигнорируйте письмо.</p>
-        <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-        <p style="color:#888; font-size:12px; text-align:center;">Это письмо отправлено автоматически. Не отвечайте на него.</p>
       </div>
-    </div>
-  `;
+    `;
         await (0, email_service_1.sendEmail)({
             to: email,
             subject: "Код для сброса пароля",
@@ -256,7 +231,7 @@ const requestResetPassword = async (req, res) => {
     }
     catch (error) {
         console.error("Ошибка requestResetPassword:", error);
-        res.status(500).json({ message: "Ошибка на сервере, попробуйте позже" });
+        res.status(500).json({ message: "Ошибка сервера, попробуйте позже" });
     }
 };
 const verifyResetCode = async (req, res) => {
