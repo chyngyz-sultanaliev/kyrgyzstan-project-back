@@ -121,7 +121,7 @@ const profile = async (req: Request, res: Response) => {
         .status(404)
         .json({ success: false, message: "Пользователь не найден" });
 
-    const favorites = user.favorites.map((fav) => {
+    const favorites = user.favorites.map((fav: any) => {
       let item = null;
       switch (fav.itemType) {
         case "TOUR":
@@ -255,7 +255,9 @@ const requestResetPassword = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Код отправлен на email" });
   } catch (error) {
     console.error("Ошибка requestResetPassword:", error);
-    res.status(500).json({ message: `Ошибка на сервере, попробуйте позже ${error}`  });
+    res
+      .status(500)
+      .json({ message: `Ошибка на сервере, попробуйте позже ${error}` });
   }
 };
 
@@ -283,7 +285,9 @@ const verifyResetCode = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Код верный" });
   } catch (error) {
     console.error("Ошибка verifyResetCode:", error);
-    res.status(500).json({ message: `Ошибка на сервере, попробуйте позже ${error}` });
+    res
+      .status(500)
+      .json({ message: `Ошибка на сервере, попробуйте позже ${error}` });
   }
 };
 

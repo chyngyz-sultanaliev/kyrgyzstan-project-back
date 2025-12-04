@@ -231,7 +231,9 @@ const requestResetPassword = async (req, res) => {
     }
     catch (error) {
         console.error("Ошибка requestResetPassword:", error);
-        res.status(500).json({ message: `Ошибка на сервере, попробуйте позже ${error}` });
+        res
+            .status(500)
+            .json({ message: `Ошибка на сервере, попробуйте позже ${error}` });
     }
 };
 const verifyResetCode = async (req, res) => {
@@ -256,7 +258,9 @@ const verifyResetCode = async (req, res) => {
     }
     catch (error) {
         console.error("Ошибка verifyResetCode:", error);
-        res.status(500).json({ message: `Ошибка на сервере, попробуйте позже ${error}` });
+        res
+            .status(500)
+            .json({ message: `Ошибка на сервере, попробуйте позже ${error}` });
     }
 };
 const resetPassword = async (req, res) => {
