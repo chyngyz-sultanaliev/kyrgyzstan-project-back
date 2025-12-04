@@ -283,7 +283,7 @@ const verifyResetCode = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Код верный" });
   } catch (error) {
     console.error("Ошибка verifyResetCode:", error);
-    res.status(500).json({ message: "Ошибка на сервере, попробуйте позже" });
+    res.status(500).json({ message: `Ошибка на сервере, попробуйте позже ${error}` });
   }
 };
 
