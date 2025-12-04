@@ -1,23 +1,36 @@
+// src/config/token.ts
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
-interface JwtPayload {
+export interface JwtPayload {
   id: string;
   email: string;
+  isAdmin: boolean;
   iat?: number;
   exp?: number;
 }
 
-const generateToken = (userId: string, userEmail: string, isAdmin:boolean) => {
+/**
+ * Генерация JWT
+ * @param userId - ID пользователя
+ * @param userEmail - Email пользователя
+ * @param isAdmin - Является ли админом
+ * @returns JWT токен
+ */
+export const generateToken = (userId: string, userEmail: string, isAdmin: boolean): string => {
   const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error("JWT_SECRET не задан в .env");
-  }
+  if (!secret) throw new Error("JWT_SECRET не задан в .env");
 
-  return jwt.sign({ id: userId, email: userEmail , isAdmin}, secret, {
+  return jwt.sign({ id: userId, email: userEmail, isAdmin }, secret, {
     expiresIn: "7d",
   });
 };
 
+/**
+ * Верификация JWT
+ * @param token - токен
+ * @returns payload или null
+ */
 export const verifyToken = (token: string): JwtPayload | null => {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error("JWT_SECRET не задан в .env");
@@ -25,8 +38,8 @@ export const verifyToken = (token: string): JwtPayload | null => {
   try {
     const decoded = jwt.verify(token, secret);
 
-    if (typeof decoded !== "object" || decoded === null) return null;
-    if (!("id" in decoded) || !("email" in decoded)) return null;
+    if (!decoded || typeof decoded !== "object") return null;
+    if (!("id" in decoded) || !("email" in decoded) || !("isAdmin" in decoded)) return null;
 
     return decoded as JwtPayload;
   } catch {
@@ -34,7 +47,16 @@ export const verifyToken = (token: string): JwtPayload | null => {
   }
 };
 
+/**
+ * Генерация безопасного кода для сброса пароля (6 символов HEX)
+ */
+
+export const generateResetToken = (): string => {
+  return crypto.randomBytes(3).toString("hex"); // 6 символов
+};
+
 export default {
   generateToken,
   verifyToken,
+  generateResetToken,
 };

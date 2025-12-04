@@ -1,11 +1,45 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const prisma_1 = __importDefault(require("../../config/prisma"));
-const token_1 = __importDefault(require("../../config/token"));
+const token_1 = __importStar(require("../../config/token"));
+const email_service_1 = require("../../config/email.service");
 const register = async (req, res) => {
     try {
         const { username, email, password, isAdmin } = req.body;
@@ -24,27 +58,22 @@ const register = async (req, res) => {
         }
         const hashedPassword = await bcryptjs_1.default.hash(password, 10);
         const newUser = await prisma_1.default.user.create({
-            data: {
-                email,
-                username,
-                isAdmin,
-                password: hashedPassword,
-            },
+            data: { email, username, isAdmin, password: hashedPassword },
         });
         const token = token_1.default.generateToken(newUser.id, newUser.email, newUser.isAdmin);
         res.status(201).json({
             success: true,
             message: "Пользователь успешно зарегистрирован",
-            token,
             id: newUser.id,
             user: newUser.username,
+            token,
         });
     }
     catch (error) {
         console.error("Ошибка register:", error);
         res.status(500).json({
             success: false,
-            message: `${error}Ошибка на сервере, попробуйте позже`,
+            message: "Ошибка на сервере, попробуйте позже",
         });
     }
 };
@@ -59,44 +88,37 @@ const login = async (req, res) => {
         }
         const user = await prisma_1.default.user.findUnique({ where: { email } });
         if (!user || !user.password) {
-            return res.status(404).json({
-                success: false,
-                message: "Пользователь не найден",
-            });
+            return res
+                .status(404)
+                .json({ success: false, message: "Пользователь не найден" });
         }
         const isMatch = await bcryptjs_1.default.compare(password, user.password);
         if (!isMatch) {
-            return res.status(401).json({
-                success: false,
-                message: "Неверный пароль",
-            });
+            return res
+                .status(401)
+                .json({ success: false, message: "Неверный пароль" });
         }
         const token = token_1.default.generateToken(user.id, user.email, user.isAdmin);
         res.status(200).json({
             success: true,
             message: "Вход выполнен успешно",
-            token,
             id: user.id,
             user: user.username,
+            token,
         });
     }
     catch (error) {
         console.error("Ошибка login:", error);
-        res.status(500).json({
-            success: false,
-            message: "Ошибка входа, попробуйте позже",
-        });
+        res
+            .status(500)
+            .json({ success: false, message: "Ошибка входа, попробуйте позже" });
     }
 };
 const profile = async (req, res) => {
     try {
         const userId = req.user?.id;
-        if (!userId) {
-            return res.status(401).json({
-                success: false,
-                message: "Unauthorized",
-            });
-        }
+        if (!userId)
+            return res.status(401).json({ success: false, message: "Unauthorized" });
         const user = await prisma_1.default.user.findUnique({
             where: { id: userId },
             select: {
@@ -106,55 +128,70 @@ const profile = async (req, res) => {
                 avatar: true,
                 createdAt: true,
                 isAdmin: true,
-                favorites: true,
+                favorites: {
+                    orderBy: { createdAt: "desc" },
+                    include: { tour: true, car: true, hotel: true },
+                },
             },
         });
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "Пользователь не найден",
-            });
-        }
+        if (!user)
+            return res
+                .status(404)
+                .json({ success: false, message: "Пользователь не найден" });
+        const favorites = user.favorites.map((fav) => {
+            let item = null;
+            switch (fav.itemType) {
+                case "TOUR":
+                    item = fav.tour;
+                    break;
+                case "CAR":
+                    item = fav.car;
+                    break;
+                case "HOTEL":
+                    item = fav.hotel;
+                    break;
+            }
+            return {
+                id: fav.id,
+                itemType: fav.itemType,
+                createdAt: fav.createdAt,
+                item,
+            };
+        });
         res.status(200).json({
             success: true,
             message: "Профиль успешно получен",
-            user,
+            user: { ...user, favorites },
         });
     }
     catch (error) {
         console.error("Ошибка profile:", error);
-        res.status(500).json({
-            success: false,
-            message: "Ошибка на сервере, попробуйте позже",
-        });
+        res
+            .status(500)
+            .json({ success: false, message: "Ошибка на сервере, попробуйте позже" });
     }
 };
 const update = async (req, res) => {
     try {
         const userId = req.user?.id;
-        if (!userId) {
+        if (!userId)
             return res.status(401).json({ success: false, message: "Unauthorized" });
-        }
         const { username, email, password, avatar } = req.body;
-        if (!username || !email) {
-            return res.status(400).json({
-                success: false,
-                message: "Поля username и email обязательны",
-            });
-        }
+        if (!username || !email)
+            return res
+                .status(400)
+                .json({ success: false, message: "Поля username и email обязательны" });
         const existingUser = await prisma_1.default.user.findUnique({ where: { email } });
-        if (existingUser && existingUser.id !== userId) {
+        if (existingUser && existingUser.id !== userId)
             return res.status(409).json({
                 success: false,
                 message: "Email уже используется другим пользователем",
             });
-        }
         const updateData = { username, email };
         if (avatar)
             updateData.avatar = avatar;
-        if (password && password.trim() !== "") {
+        if (password && password.trim() !== "")
             updateData.password = await bcryptjs_1.default.hash(password, 10);
-        }
         const updatedUser = await prisma_1.default.user.update({
             where: { id: userId },
             data: updateData,
@@ -167,7 +204,7 @@ const update = async (req, res) => {
                 updatedAt: true,
             },
         });
-        return res.status(200).json({
+        res.status(200).json({
             success: true,
             message: "Профиль успешно обновлён",
             user: updatedUser,
@@ -175,11 +212,119 @@ const update = async (req, res) => {
     }
     catch (error) {
         console.error("Ошибка update:", error);
-        return res.status(500).json({
+        res.status(500).json({
             success: false,
             message: "Ошибка сервера при обновлении профиля",
         });
     }
 };
-exports.default = { register, login, profile, update };
+const requestResetPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email)
+            return res.status(400).json({ message: "Email обязателен" });
+        const user = await prisma_1.default.user.findUnique({ where: { email } });
+        if (!user)
+            return res.status(404).json({ message: "Пользователь не найден" });
+        // Используем безопасный токен
+        const token = (0, token_1.generateResetToken)();
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 минут
+        await prisma_1.default.resetPasswordToken.create({
+            data: { userId: user.id, token, expiresAt },
+        });
+        const html = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; background: #f4f4f7;">
+      <div style="max-width: 500px; margin: 0 auto; background: #fff; border-radius: 10px; padding: 30px;">
+        <h2 style="text-align:center; color:#333;">Сброс пароля</h2>
+        <p style="color:#555; font-size:15px;">Вы запросили сброс пароля. Используйте код ниже:</p>
+        <div style="text-align:center; margin:20px 0;">
+          <span style="font-size:28px; font-weight:bold; letter-spacing:6px; background:#f0f0f0; padding:15px 25px; border-radius:8px;">${token}</span>
+        </div>
+        <p style="color:#555; font-size:14px;">Код действителен <strong>15 минут</strong>.<br>Если вы не запрашивали сброс пароля — проигнорируйте письмо.</p>
+        <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+        <p style="color:#888; font-size:12px; text-align:center;">Это письмо отправлено автоматически. Не отвечайте на него.</p>
+      </div>
+    </div>
+  `;
+        await (0, email_service_1.sendEmail)({
+            to: email,
+            subject: "Код для сброса пароля",
+            text: `Ваш код: ${token}`,
+            html,
+        });
+        res.status(200).json({ message: "Код отправлен на email" });
+    }
+    catch (error) {
+        console.error("Ошибка requestResetPassword:", error);
+        res.status(500).json({ message: "Ошибка на сервере, попробуйте позже" });
+    }
+};
+const verifyResetCode = async (req, res) => {
+    try {
+        const { email, token } = req.body;
+        if (!email || !token)
+            return res.status(400).json({ message: "Email и код обязательны" });
+        const user = await prisma_1.default.user.findUnique({ where: { email } });
+        if (!user)
+            return res.status(404).json({ message: "Пользователь не найден" });
+        const record = await prisma_1.default.resetPasswordToken.findFirst({
+            where: {
+                userId: user.id,
+                token,
+                used: false,
+                expiresAt: { gt: new Date() },
+            },
+        });
+        if (!record)
+            return res.status(400).json({ message: "Неверный или просроченный код" });
+        res.status(200).json({ message: "Код верный" });
+    }
+    catch (error) {
+        console.error("Ошибка verifyResetCode:", error);
+        res.status(500).json({ message: "Ошибка на сервере, попробуйте позже" });
+    }
+};
+const resetPassword = async (req, res) => {
+    try {
+        const { email, token, newPassword } = req.body;
+        if (!email || !token || !newPassword)
+            return res.status(400).json({ message: "Все поля обязательны" });
+        const user = await prisma_1.default.user.findUnique({ where: { email } });
+        if (!user)
+            return res.status(404).json({ message: "Пользователь не найден" });
+        const record = await prisma_1.default.resetPasswordToken.findFirst({
+            where: {
+                userId: user.id,
+                token,
+                used: false,
+                expiresAt: { gt: new Date() },
+            },
+        });
+        if (!record)
+            return res.status(400).json({ message: "Неверный или просроченный код" });
+        const hashedPassword = await bcryptjs_1.default.hash(newPassword, 10);
+        await prisma_1.default.user.update({
+            where: { id: user.id },
+            data: { password: hashedPassword },
+        });
+        await prisma_1.default.resetPasswordToken.update({
+            where: { id: record.id },
+            data: { used: true },
+        });
+        res.status(200).json({ message: "Пароль успешно обновлён" });
+    }
+    catch (error) {
+        console.error("Ошибка resetPassword:", error);
+        res.status(500).json({ message: "Ошибка на сервере, попробуйте позже" });
+    }
+};
+exports.default = {
+    register,
+    login,
+    profile,
+    update,
+    requestResetPassword,
+    resetPassword,
+    verifyResetCode,
+};
 //# sourceMappingURL=auth.controllers.js.map

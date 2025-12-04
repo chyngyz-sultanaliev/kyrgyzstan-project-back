@@ -11,5 +11,9 @@ authRoutes.post("/register", auth_controllers_1.default.register);
 authRoutes.post("/login", auth_controllers_1.default.login);
 authRoutes.get("/profile", auth_middleware_1.authMiddleware, auth_controllers_1.default.profile);
 authRoutes.put("/update", auth_middleware_1.authMiddleware, auth_controllers_1.default.update);
+// Сброс пароля
+authRoutes.post("/request-reset", auth_controllers_1.default.requestResetPassword);
+authRoutes.post("/verify-code", auth_controllers_1.default.verifyResetCode);
+authRoutes.post("/reset-password", auth_controllers_1.default.resetPassword);
 exports.default = authRoutes;
 //# sourceMappingURL=auth.routes.js.map

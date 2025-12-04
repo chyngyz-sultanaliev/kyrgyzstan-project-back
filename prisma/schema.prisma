@@ -18,6 +18,7 @@ model User {
   updatedAt DateTime   @updatedAt
   favorites Favorite[]
   reviews   Review[]
+  resetTokens ResetPasswordToken[]
 }
 // TOUR CATEGORIES & TOURS & TOURDAY
 model CategoryTour {
@@ -46,6 +47,7 @@ model Tour {
   updatedAt   DateTime     @updatedAt
   tourDays    TourDay[]    
   reviews     Review[]
+  favorites Favorite[]
 
   @@index([categoryId])
 }
@@ -91,7 +93,8 @@ model Car {
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
   reviews        Review[]
-  
+  favorites       Favorite[]
+
   @@index([categoryId])
 }
 // HOTEL CATEGORIES & HOTELS
@@ -140,6 +143,7 @@ model Hotel {
   importantInfo  String?
   extraFee       String?
   reviews        Review[]
+  favorites      Favorite[]
 
   categoryId     String
   category       CategoryHotel @relation(fields: [categoryId], references: [id])
@@ -160,13 +164,22 @@ model Favorite {
   id        String           @id @default(uuid())
   userId    String
   user      User             @relation(fields: [userId], references: [id])
-  itemId    String
+
   itemType  FavoriteItemType
   createdAt DateTime         @default(now())
 
+  // Связи — один из них будет заполнен
+  tourId    String?  
+  carId     String?  
+  hotelId   String?  
+
+  tour      Tour?    @relation(fields: [tourId], references: [id])
+  car       Car?     @relation(fields: [carId], references: [id])
+  hotel     Hotel?   @relation(fields: [hotelId], references: [id])
+
   @@index([userId])
-  @@index([itemType, itemId])
 }
+
 // REVIEW
 model Review {
   id        String   @id @default(uuid())
@@ -189,6 +202,23 @@ model Review {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+// RESET PASSWORD
+model ResetPasswordToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  token     String   
+  expiresAt DateTime 
+
+  used      Boolean  @default(false) 
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
+
 // NEWS
 model News {
   id          String   @id @default(uuid())
