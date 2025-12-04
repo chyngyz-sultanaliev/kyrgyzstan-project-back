@@ -255,7 +255,7 @@ const requestResetPassword = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Код отправлен на email" });
   } catch (error) {
     console.error("Ошибка requestResetPassword:", error);
-    res.status(500).json({ message: "Ошибка сервера, попробуйте позже" });
+    res.status(500).json({ message: `Ошибка на сервере, попробуйте позже ${error}`  });
   }
 };
 
