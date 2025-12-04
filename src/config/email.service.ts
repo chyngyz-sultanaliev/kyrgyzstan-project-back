@@ -16,7 +16,7 @@ interface EmailOptions {
 // Используем named export
 export const sendEmail = async ({ to, subject, text, html }: EmailOptions) => {
   const payload: any = {
-    from: "kyrgyzstan@resend.dev",
+    from: "onboarding@resend.dev",
     to,
     subject,
     text,
