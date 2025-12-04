@@ -12,7 +12,7 @@ const resend = new resend_1.Resend(process.env.RESEND_API_KEY);
 // Используем named export
 const sendEmail = async ({ to, subject, text, html }) => {
     const payload = {
-        from: "kyrgyzstan@resend.dev",
+        from: "onboarding@resend.dev",
         to,
         subject,
         text,
