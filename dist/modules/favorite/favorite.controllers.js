@@ -54,23 +54,38 @@ const addFavorite = async (req, res) => {
     if (!itemId)
         return res.status(400).json({ success: false, message: "itemId обязательны" });
     try {
+        let item = null;
         let itemType = null;
-        // Определяем тип элемента по его существованию в базе
-        let item = await prisma_1.default.tour.findUnique({ where: { id: itemId } });
+        // Ищем элемент в каждой таблице
+        item = await prisma_1.default.tour.findUnique({ where: { id: itemId } });
         if (item)
             itemType = "TOUR";
         if (!item) {
-            let item = await prisma_1.default.car.findUnique({ where: { id: itemId } });
+            item = await prisma_1.default.car.findUnique({ where: { id: itemId } });
             if (item)
                 itemType = "CAR";
         }
         if (!item) {
-            let item = await prisma_1.default.hotel.findUnique({ where: { id: itemId } });
+            item = await prisma_1.default.hotel.findUnique({ where: { id: itemId } });
             if (item)
                 itemType = "HOTEL";
         }
         if (!itemType)
             return res.status(404).json({ message: "Элемент не найден" });
+        // Проверяем, есть ли уже в избранном
+        const existingFavorite = await prisma_1.default.favorite.findFirst({
+            where: {
+                userId,
+                OR: [
+                    { tourId: itemType === "TOUR" ? itemId : undefined },
+                    { carId: itemType === "CAR" ? itemId : undefined },
+                    { hotelId: itemType === "HOTEL" ? itemId : undefined },
+                ],
+            },
+        });
+        if (existingFavorite) {
+            return res.status(400).json({ success: false, message: "Элемент уже в избранном" });
+        }
         // Создаём favorite
         const data = { userId, itemType };
         if (itemType === "TOUR")
