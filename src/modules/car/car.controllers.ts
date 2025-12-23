@@ -22,7 +22,7 @@ const getOneCar = async (req: Request, res: Response) => {
       });
     }
 
-    const cars = await prisma.hotel.findUnique({
+    const cars = await prisma.car.findUnique({
       where: { id },
       include: {
         reviews: {

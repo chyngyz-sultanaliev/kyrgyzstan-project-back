@@ -22,7 +22,7 @@ const getOneCar = async (req, res) => {
                 message: "ID машины не был передан.",
             });
         }
-        const cars = await prisma_1.default.hotel.findUnique({
+        const cars = await prisma_1.default.car.findUnique({
             where: { id },
             include: {
                 reviews: {
