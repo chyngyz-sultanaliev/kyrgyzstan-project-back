@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import prisma from "../../config/prisma";
-import { FavoriteItemType } from "@prisma/client";
 
 const getAll = async (req: Request, res: Response) => {
   try {
@@ -54,23 +53,40 @@ const addFavorite = async (req: Request, res: Response) => {
   if (!itemId) return res.status(400).json({ success: false, message: "itemId обязательны" });
 
   try {
+    let item: any = null;
     let itemType: "TOUR" | "CAR" | "HOTEL" | null = null;
 
-    // Определяем тип элемента по его существованию в базе
-    let item = await prisma.tour.findUnique({ where: { id: itemId } });
+    // Ищем элемент в каждой таблице
+    item = await prisma.tour.findUnique({ where: { id: itemId } });
     if (item) itemType = "TOUR";
 
     if (!item) {
-    let  item = await prisma.car.findUnique({ where: { id: itemId } });
+      item = await prisma.car.findUnique({ where: { id: itemId } });
       if (item) itemType = "CAR";
     }
 
     if (!item) {
-     let item = await prisma.hotel.findUnique({ where: { id: itemId } });
+      item = await prisma.hotel.findUnique({ where: { id: itemId } });
       if (item) itemType = "HOTEL";
     }
 
     if (!itemType) return res.status(404).json({ message: "Элемент не найден" });
+
+    // Проверяем, есть ли уже в избранном
+    const existingFavorite = await prisma.favorite.findFirst({
+      where: {
+        userId,
+        OR: [
+          { tourId: itemType === "TOUR" ? itemId : undefined },
+          { carId: itemType === "CAR" ? itemId : undefined },
+          { hotelId: itemType === "HOTEL" ? itemId : undefined },
+        ],
+      },
+    });
+
+    if (existingFavorite) {
+      return res.status(400).json({ success: false, message: "Элемент уже в избранном" });
+    }
 
     // Создаём favorite
     const data: any = { userId, itemType };
@@ -91,6 +107,7 @@ const addFavorite = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Ошибка при добавлении в избранное" });
   }
 };
+
 
 
 const removeFavorite = async (req: Request, res: Response) => {
