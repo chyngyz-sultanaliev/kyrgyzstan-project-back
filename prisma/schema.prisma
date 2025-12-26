@@ -16,9 +16,10 @@ model User {
   isAdmin   Boolean    @default(false) 
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-  favorites Favorite[]
-  reviews   Review[]
-  resetTokens ResetPasswordToken[]
+  favorites     Favorite[]       
+  reviews       Review[]         
+  resetTokens   ResetPasswordToken[]
+
 }
 // TOUR CATEGORIES & TOURS & TOURDAY
 model CategoryTour {
@@ -42,12 +43,13 @@ model Tour {
   days        Int
   price       Int
   categoryId  String
-  category    CategoryTour @relation(fields: [categoryId], references: [id])
+  category    CategoryTour @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  tourDays    TourDay[]    
-  reviews     Review[]
-  favorites Favorite[]
+  tourDays    TourDay[] 
+  reviews     Review[]  
+  favorites   Favorite[]
+
 
   @@index([categoryId])
 }
@@ -57,7 +59,7 @@ model TourDay {
   dayNumber   Int
   description String
   tourId      String
-  tour        Tour     @relation(fields: [tourId], references: [id])
+  tour Tour @relation(fields: [tourId], references: [id], onDelete: Cascade)
 
   @@index([tourId])
   @@unique([tourId, dayNumber])  
@@ -89,11 +91,11 @@ model Car {
   minDriverAge   Int?                           
   categoryId     String
   withDriver     Boolean? @default(false)
-  category       CategoryCar @relation(fields: [categoryId], references: [id])
+  category       CategoryCar @relation(fields: [categoryId], references: [id],onDelete: SetNull)
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
-  reviews        Review[]
-  favorites       Favorite[]
+  reviews  Review[]  
+  favorites Favorite[]
 
   @@index([categoryId])
 }
@@ -142,11 +144,12 @@ model Hotel {
   checkOut       String?
   importantInfo  String?
   extraFee       String?
-  reviews        Review[]
-  favorites      Favorite[]
+  reviews  Review[]   
+  favorites Favorite[]
+
 
   categoryId     String
-  category       CategoryHotel @relation(fields: [categoryId], references: [id])
+  category       CategoryHotel @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -163,7 +166,7 @@ enum FavoriteItemType {
 model Favorite {
   id        String           @id @default(uuid())
   userId    String
-  user      User             @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   itemType  FavoriteItemType
   createdAt DateTime         @default(now())
@@ -173,9 +176,10 @@ model Favorite {
   carId     String?  
   hotelId   String?  
 
-  tour      Tour?    @relation(fields: [tourId], references: [id])
-  car       Car?     @relation(fields: [carId], references: [id])
-  hotel     Hotel?   @relation(fields: [hotelId], references: [id])
+  tour  Tour?  @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  car   Car?   @relation(fields: [carId], references: [id], onDelete: Cascade)
+  hotel Hotel? @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
 
   @@index([userId])
 }
@@ -184,16 +188,16 @@ model Favorite {
 model Review {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   tourId    String?  
-  tour      Tour?    @relation(fields: [tourId], references: [id])
+  tour      Tour?    @relation(fields: [tourId], references: [id], onDelete: Cascade)
 
   carId     String?
-  car       Car?     @relation(fields: [carId], references: [id])
+  car       Car?     @relation(fields: [carId], references: [id], onDelete: Cascade)
 
   hotelId   String?
-  hotel     Hotel?   @relation(fields: [hotelId], references: [id])
+  hotel     Hotel?   @relation(fields: [hotelId], references: [id], onDelete: Cascade)
 
   rating    Float
   comment   String?
@@ -206,7 +210,7 @@ model Review {
 model ResetPasswordToken {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   token     String   
   expiresAt DateTime 
