@@ -14,7 +14,7 @@ import { adminMiddleware } from "../middleware/admin.middleware";
 const globalRoutes = Router();
 
 const corsConfig = {
-  origin: ["http://localhost:3000"],
+  origin: ["http://localhost:3000","https://kyrgyzstan-project-front-le0ta3e2l.vercel.app","https://kyrgyzstan-project-front-git-deve-chyngyz-sultanalievs-projects.vercel.app"],
 };
 globalRoutes.use(cors(corsConfig));
 globalRoutes.use("/car", carRoutes);
