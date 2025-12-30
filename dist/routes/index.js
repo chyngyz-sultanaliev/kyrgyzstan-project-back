@@ -16,7 +16,12 @@ const favorite_routes_1 = __importDefault(require("../modules/favorite/favorite.
 const auth_middleware_1 = require("../middleware/auth.middleware");
 const globalRoutes = (0, express_1.Router)();
 const corsConfig = {
-    origin: ["http://localhost:3000"],
+    origin: [
+        "http://localhost:3000",
+        "https://kyrgyzstan-project-front-le0ta3e2l.vercel.app",
+        "https://kyrgyzstan-project-front-qq1zvfmvw.vercel.app",
+        "https://kyrgyzstan-project-front.vercel.app",
+    ],
 };
 globalRoutes.use((0, cors_1.default)(corsConfig));
 globalRoutes.use("/car", car_routes_1.default);
